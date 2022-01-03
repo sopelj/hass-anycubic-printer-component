@@ -6,7 +6,7 @@ import logging
 from typing import cast
 
 from homeassistant import core
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_IP_ADDRESS, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
@@ -52,6 +52,7 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
             name=f"anycubic-{config.entry_id}",
             update_interval=timedelta(seconds=interval),
         )
+        _LOGGER.debug(f'Setup {config.data[CONF_IP_ADDRESS]}:{config.data.get(CONF_PORT, DEFAULT_PORT)}')
         self._printer = AnycubicPrinter(
             config.data[CONF_IP_ADDRESS],
             config.data.get(CONF_PORT, DEFAULT_PORT)
@@ -100,4 +101,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Anycubic component."""
+    if DOMAIN not in config:
+        return True
+    for conf in config[DOMAIN]:
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_IMPORT}, data=conf)
+        )
     return True
