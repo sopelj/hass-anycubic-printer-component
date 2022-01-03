@@ -1,18 +1,22 @@
 {
+  "title": "Imprimante Anycubic",
   "config": {
+    "step": {
+      "user": {
+        "title": "Ajouter une imprimante Anycubic",
+        "data": {
+          "ip_address": "Adresse IP",
+          "port": "Port"
+        }
+      }
+    },
     "error": {
       "cannot_connect": "Impossible de se connecter à l'imprimante.",
       "unknown": "Un erreur inconnue s'est produit."
     },
-    "step": {
-      "user": {
-        "data": {
-          "ip_address": "Adresse IP",
-          "port": "Port"
-        },
-        "description": "Veuillez saisir les information de votre imprimante.",
-        "title": "Ajouter une imprimante Anycubic"
-      }
+    "abort": {
+      "unknown": "Un erreur inconnue s'est produit.",
+      "cannot_connect": "Impossible de se connecter à l'imprimante"
     }
   }
 }

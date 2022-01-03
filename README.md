@@ -18,6 +18,18 @@ Add to HACS as custom repository:
 
 And then add to your configuration.yaml and add sensors for your mug(s):
 
+### Config Flow
+
+- Go into Settings -> Devices 
+- Choose "Add Integration"
+- Search for "Anycubic"
+- Enter the IP address and port (default is 6000) of your printer and hit next
+
+
+### Yaml
+
+*Note:* Not sure if I'll keep this option as they seem to be pushing the config flow which is much quicker, but for now it works for now.
+
 ```yaml
 anycubic:
   - ip_address: 192.168.2.123  # Replace with your Printer's IP Address
