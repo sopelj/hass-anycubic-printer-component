@@ -21,11 +21,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                printer = AnycubicPrinter(user_input[CONF_IP_ADDRESS], user_input.get(CONF_PORT, DEFAULT_PORT))
-                info = await printer.get_sys_info()
-                await self.async_set_unique_id(info['identifier'], raise_on_progress=False)
-                self._abort_if_unique_id_configured()
-                return self.async_create_entry(title=info['model'], data=user_input)
+                return await self._finalize(user_input)
             except data_entry_flow.AbortFlow as err:
                 raise err from None
             except asyncio.TimeoutError:  # pylint: disable=broad-except
@@ -36,6 +32,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=CONFIG_SCHEMA, errors=errors
         )
+
+    async def _finalize(self, user_input: dict[str, Any]):
+        printer = AnycubicPrinter(user_input[CONF_IP_ADDRESS], user_input.get(CONF_PORT, DEFAULT_PORT))
+        info = await printer.get_sys_info()
+        await self.async_set_unique_id(info['identifier'], raise_on_progress=False)
+        self._abort_if_unique_id_configured()
+        return self.async_create_entry(title=info['model'], data=user_input)
 
     async def async_step_import(self, user_input):
         return await self.async_step_user(user_input)
