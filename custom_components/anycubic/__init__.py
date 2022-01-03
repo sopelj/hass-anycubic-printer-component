@@ -15,25 +15,28 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 import homeassistant.util.dt as dt_util
 import voluptuous as vol
 
-from .const import DOMAIN
+from .const import DEFAULT_NAME, DEFAULT_PORT, DOMAIN
 from .utils import AnycubicPrinter
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS = [Platform.SENSOR]
 
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.All(
-        cv.ensure_list,
-        [
-            vol.Schema(
-                {
-                    vol.Required(CONF_IP_ADDRESS): cv.matches_regex(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'),
-                    vol.Optional(CONF_PORT, default=6000): cv.port,
-                }
-            )
-        ],
-    )
-})
+CONFIG_SCHEMA = vol.Schema(
+    {
+        DOMAIN: vol.All(
+            cv.ensure_list,
+            [
+                vol.Schema(
+                    {
+                        vol.Required(CONF_IP_ADDRESS): cv.matches_regex(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'),
+                        vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
+                    }
+                )
+            ],
+        )
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
@@ -51,9 +54,9 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
         )
         self._printer = AnycubicPrinter(
             config.data[CONF_IP_ADDRESS],
-            config.data.get(CONF_PORT, 6000)
+            config.data.get(CONF_PORT, DEFAULT_PORT)
         )
-        self.data = {"info": None, "status": None, "last_read_time": None}
+        self.data = {"info": {}, "status": {}, "last_read_time": None, "name": DEFAULT_NAME}
 
     async def _async_update_data(self):
         try:
@@ -61,15 +64,18 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
         except asyncio.TimeoutError as e:
             raise UpdateFailed(e) from e
         status = await self._printer.get_status()
-        return {"info": sys_info, "status": status, "last_read_time": dt_util.utcnow()}
+        name = await self._printer.get_name()
+        return {"info": sys_info, "status": status, "last_read_time": dt_util.utcnow(), 'name': name}
 
     @property
     def device_info(self) -> DeviceInfo:
         unique_id = cast(str, self.config_entry.unique_id)
         return DeviceInfo(
             identifiers={(DOMAIN, unique_id)},
+            name=self.data['name'],
+            model=self.data['info'].get('model', None),
+            sw_version=self.data['info'].get('firmware', None),
             manufacturer="Anycubic",
-            name="Anycubic Printer",
         )
 
 
