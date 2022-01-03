@@ -1,0 +1,18 @@
+{
+  "config": {
+    "error": {
+      "cannot_connect": "Unable to connect to the printer.",
+      "unknown": "An unknown error occurred."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "ip_address": "IP Address",
+          "port": "Port"
+        },
+        "description": "Enter the connection information for you printer.",
+        "title": "Add an Anycubic Printer"
+      }
+    }
+  }
+}
