@@ -1,82 +1,64 @@
 from __future__ import annotations
 
-import asyncio
-from collections.abc import Callable
-from typing import Optional, Any
+import logging
+from typing import Any
 
-from homeassistant.components.sensor import PLATFORM_SCHEMA, Entity
-from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT
+from homeassistant.components.sensor import PLATFORM_SCHEMA, Entity, SensorEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from homeassistant.helpers import config_validation as cv
-import voluptuous as vol
-from homeassistant.helpers.typing import HomeAssistantType, ConfigType, DiscoveryInfoType
+from . import AnycubicDataUpdateCoordinator
+from .const import DOMAIN
 
-from custom_components.anycubic.anycubic import AnycubicPrinter
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_IP_ADDRESS): cv.matches_regex(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'),
-        vol.Optional(CONF_PORT, default=6000): cv.port,
-    }
-)
+_LOGGER = logging.getLogger(__name__)
 
 
-class AnycubicEntity(Entity):
-    def __init__(self, ip_address: str, port: int) -> None:
-        super().__init__()
-        self.ip_address = ip_address
-        self.port = port
-        self.attrs: dict[str, Any] = {}
-        self._unique_id = f"anycubic_{ip_address.replace('.', '_')}"
-        self._name: Optional[str] = None
-        self._state = None
-        self._available = True
+class AnycubicSensorBase(CoordinatorEntity, SensorEntity):
+    coordinator: AnycubicDataUpdateCoordinator
+
+    def __init__(
+        self,
+        coordinator: AnycubicDataUpdateCoordinator,
+        sensor_type: str,
+        device_id: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._attr_name = f"Anycubic {sensor_type}"
+        self._attr_unique_id = f"{sensor_type}-{device_id}"
 
     @property
-    def name(self) -> str:
-        """Return the name of the entity."""
-        return self._name
+    def device_info(self):
+        return self.coordinator.device_info
+
+
+class AnycubicPrintStatusSensor(AnycubicSensorBase):
+    _attr_icon = "mdi:printer-3d"
+
+    def __init__(self, coordinator: AnycubicDataUpdateCoordinator, device_id: str) -> None:
+        super().__init__(coordinator, "Current State", device_id)
 
     @property
-    def unique_id(self) -> str:
-        """Return the unique ID of the sensor."""
-        return self._unique_id
+    def native_value(self):
+        status: dict[str, Any] = self.coordinator.data["status"]
+        return status['code'] if status else None
 
     @property
     def available(self) -> bool:
-        """Return True if entity is available."""
-        return self._available
-
-    @property
-    def state(self) -> Optional[str]:
-        return self._state
-
-    @property
-    def device_state_attributes(self) -> dict[str, Any]:
-        return self.attrs
-
-    async def async_update(self) -> None:
-        printer = AnycubicPrinter(self.ip_address, self.port)
-        try:
-            attrs = await printer.get_sys_info()
-        except asyncio.TimeoutError:
-            self._available = False
-            return
-        self._available = True
-        status = await printer.get_status()
-        self._state = status['status']
-        attrs.update(**status)
-        self.attrs = attrs
+        return self.coordinator.last_update_success and self.coordinator.data["status"]
 
 
-async def async_setup_platform(
-    hass: HomeAssistantType,
-    config: ConfigType,
-    async_add_entities: Callable,
-    discovery_info: Optional[DiscoveryInfoType] = None,
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the sensor platform."""
-    async_add_entities(
-        [AnycubicEntity(config[CONF_IP_ADDRESS], config.get(CONF_PORT, 6000))],
-        update_before_add=True
-    )
+    coordinator: AnycubicDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    device_id = config_entry.unique_id
+    assert device_id is not None
+    entities: list[SensorEntity] = [
+        AnycubicPrintStatusSensor(coordinator, device_id)
+    ]
+    async_add_entities(entities)

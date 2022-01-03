@@ -19,8 +19,7 @@ Add to HACS as custom repository:
 And then add to your configuration.yaml and add sensors for your mug(s):
 
 ```yaml
-sensors:
-  - platform: anycubic
-    ip_address: 192.168.2.123  # Replace with your Printer's IP Address
+anycubic:
+  - ip_address: 192.168.2.123  # Replace with your Printer's IP Address
     port: 6000  # If your port is different from 6000
 ```

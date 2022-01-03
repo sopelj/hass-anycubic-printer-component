@@ -35,7 +35,7 @@ class AnycubicPrinter:
             await writer.wait_closed()
         return data
 
-    async def send_cmd(self, *commands: str, flatten: bool = True) -> Union[str, list[str]]:
+    async def send_cmd(self, *commands: str, flatten: bool = True) -> str | list[str]:
         """Send a command to the Printer."""
         data = await self._send_message(','.join(commands) + ',')
         response = data.split(',')[len(commands):-1]
@@ -81,5 +81,5 @@ class AnycubicPrinter:
         return None
 
     async def get_sys_info(self) -> dict[str, str]:
-        model, version, serial, wifi = await self.send_cmd('getsysinfo')
-        return {'model': model, 'firmware': version, 'serial': serial, 'wifi': wifi}
+        model, version, identifier, wifi = await self.send_cmd('getsysinfo')
+        return {'model': model, 'firmware_version': version, 'identifier': identifier, 'wifi_ssid': wifi}
