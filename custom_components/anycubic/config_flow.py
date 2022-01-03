@@ -3,15 +3,15 @@ from typing import Any, Optional
 
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.const import CONF_IP_ADDRESS, CONF_PORT
-from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 
+from . import _LOGGER
 from .const import DEFAULT_PORT, DOMAIN
 from .utils import AnycubicPrinter
 
 CONFIG_SCHEMA = vol.Schema({
-    vol.Required(CONF_IP_ADDRESS, default=''): cv.matches_regex(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'),
-    vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
+    vol.Required(CONF_IP_ADDRESS): str,
+    vol.Optional(CONF_PORT, default=DEFAULT_PORT): str,
 })
 
 
@@ -19,6 +19,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input: Optional[dict[str, Any]] = None):
         """Invoked when a user initiates a flow via the user interface."""
         errors: dict[str, str] = {}
+        _LOGGER.debug(f'{user_input}')
         if user_input is not None:
             try:
                 return await self._finalize(user_input)
