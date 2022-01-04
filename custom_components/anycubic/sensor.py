@@ -25,7 +25,7 @@ class AnycubicSensorBase(CoordinatorEntity):
     ) -> None:
         super().__init__(coordinator)
         self._device_id = device_id
-        self._attr_name = f"Anycubic {sensor_type}"
+        self._attr_name = f"Anycubic Printer {sensor_type}"
         self._attr_unique_id = f"{sensor_type}-{device_id}"
 
     @property

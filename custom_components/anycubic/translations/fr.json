@@ -12,6 +12,7 @@
     },
     "error": {
       "cannot_connect": "Impossible de se connecter à l'imprimante.",
+      "invalid_ip": "IP/Hôte invalide ou introuvable",
       "unknown": "Un erreur inconnue s'est produit."
     },
     "abort": {

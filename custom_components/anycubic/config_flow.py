@@ -1,4 +1,5 @@
 import asyncio
+import socket
 from typing import Any, Optional
 
 from homeassistant import config_entries, data_entry_flow
@@ -19,15 +20,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input: Optional[dict[str, Any]] = None):
         """Invoked when a user initiates a flow via the user interface."""
         errors: dict[str, str] = {}
-        _LOGGER.debug(f'{user_input}')
         if user_input is not None:
             try:
                 return await self._finalize(user_input)
             except data_entry_flow.AbortFlow as err:
                 raise err from None
+            except socket.gaierror:
+                errors["base"] = "invalid_ip"
             except asyncio.TimeoutError:  # pylint: disable=broad-except
                 errors["base"] = "cannot_connect"
-            except Exception:  # pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
+                _LOGGER.error(str(e))
                 errors["base"] = "unknown"
 
         return self.async_show_form(

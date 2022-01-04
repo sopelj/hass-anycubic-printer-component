@@ -12,6 +12,7 @@
     },
     "error": {
       "cannot_connect": "Unable to connect to the printer.",
+      "invalid_ip": "IP/Host is invalid or unresolvable",
       "unknown": "An unknown error occurred."
     },
     "abort": {
