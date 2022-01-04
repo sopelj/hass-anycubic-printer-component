@@ -11,7 +11,7 @@ from .utils import AnycubicPrinter
 
 CONFIG_SCHEMA = vol.Schema({
     vol.Required(CONF_IP_ADDRESS): str,
-    vol.Required(CONF_PORT, default=DEFAULT_PORT): str,
+    vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
 })
 
 
