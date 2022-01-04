@@ -80,10 +80,10 @@ class AnycubicPrintEstimatedFinishTimeSensor(AnycubicSensorBase, SensorEntity):
     @property
     def native_value(self) -> datetime | None:
         status: dict[str, Any] = self.coordinator.data["status"]
-        if not status['code'] not in ('print', 'pause'):
+        if status['code'] not in ('print', 'pause'):
             return None
         read_time = self.coordinator.data["last_read_time"]
-        return read_time + timedelta(seconds=status.get('time_remaining'))
+        return read_time + timedelta(seconds=status.get('time_remaining', 0))
 
 
 async def async_setup_entry(
