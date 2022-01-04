@@ -45,11 +45,11 @@ class AnycubicPrinter:
             await writer.wait_closed()
         return data
 
-    async def send_cmd(self, *commands: str, flatten: bool = True) -> str | list[bytes]:
+    async def send_cmd(self, *commands: str, flatten: bool = True) -> str | list[str]:
         """Send a command to the Printer."""
         data = await self._send_message(','.join(commands) + ',')
-        response = data.split(b',')[len(commands):-1]
-        if response and response[0].startswith(b'ERROR'):
+        response = [s.decode('gbk') for s in data.split(b',')[len(commands):-1]]
+        if response and response[0].startswith('ERROR'):
             error_type = int(response[0][5]) if len(response[0]) == 6 else 0
             raise AnycubicError(f'Failed to run command "{",".join(commands)}" ({response[0]})', error_type)
         if flatten is True and len(response) == 1:
@@ -67,8 +67,8 @@ class AnycubicPrinter:
                 progress=int(status.progress),
                 current_layer=int(status.current_layer),
                 total_layers=int(status.total_layers),
-                time_total=str(timedelta(seconds=status.time_total)),
-                time_remaining=str(timedelta(seconds=status.time_remaining)),
+                time_total=int(status.time_total),
+                time_remaining=int(status.time_remaining),
                 resin=f'{status.resin}mL',
                 type=status.type,
                 layer_height=float(status.layer_height)
