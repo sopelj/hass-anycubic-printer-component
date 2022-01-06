@@ -72,7 +72,7 @@ class AnycubicPrintJobPercentageSensor(AnycubicSensorBase, SensorEntity):
     def native_value(self) -> int | None:
         status: dict[str, Any] = self.coordinator.data["status"]
         _LOGGER.info(f'{status}')
-        if not status['code'] not in (STATUS_PRINTING, STATUS_PAUSED, STATUS_FINISHED):
+        if status['code'] not in (STATUS_PRINTING, STATUS_PAUSED, STATUS_FINISHED):
             return None
         if status['code'] == STATUS_FINISHED:
             return 100
