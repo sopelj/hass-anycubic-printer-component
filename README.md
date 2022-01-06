@@ -36,3 +36,33 @@ anycubic:
   - ip_address: 192.168.2.123  # Replace with your Printer's IP Address
     port: 6000  # If your port is different from 6000
 ```
+
+## Usage
+
+Quick example for usage in lovelace
+
+![](./images/lovelace_example.png)
+
+```yaml
+- type: vertical-stack
+  cards:
+    - type: entity
+      entity: sensor.anycubic_current_state
+    - type: conditional
+      conditions:
+        - entity: sensor.anycubic_current_state
+          state_not: Stopped
+      card:
+        type: gauge
+        entity: sensor.anycubic_job_percentage
+        min: 0
+        max: 100
+        name: Print Progress
+    - type: conditional
+      conditions:
+        - entity: sensor.anycubic_current_state
+          state: Printing
+      card:
+        type: entity
+        entity: sensor.anycubic_estimated_finish_time
+```
