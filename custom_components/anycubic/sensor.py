@@ -10,8 +10,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import AnycubicDataUpdateCoordinator
-from .const import DOMAIN
+from . import _LOGGER, AnycubicDataUpdateCoordinator
+from .const import (
+    DOMAIN,
+    STATUS_FINISHED,
+    STATUS_LABELS,
+    STATUS_PAUSED,
+    STATUS_PRINTING,
+)
 
 
 class AnycubicSensorBase(CoordinatorEntity):
@@ -46,7 +52,8 @@ class AnycubicPrintStatusSensor(AnycubicSensorBase):
     @property
     def state(self):
         status: dict[str, Any] = self.coordinator.data["status"]
-        return status['code'] if status else None
+        status_code = status.get('code')
+        return STATUS_LABELS.get(status_code, status_code) or None
 
     @property
     def state_attributes(self) -> dict[str, Any]:
@@ -64,9 +71,10 @@ class AnycubicPrintJobPercentageSensor(AnycubicSensorBase, SensorEntity):
     @property
     def native_value(self) -> int | None:
         status: dict[str, Any] = self.coordinator.data["status"]
-        if not status['code'] not in ('print', 'pause', 'finish'):
+        _LOGGER.info(f'{status}')
+        if not status['code'] not in (STATUS_PRINTING, STATUS_PAUSED, STATUS_FINISHED):
             return None
-        if status['code'] == 'finish':
+        if status['code'] == STATUS_FINISHED:
             return 100
         return status.get('progress', 0)
 
@@ -80,7 +88,7 @@ class AnycubicPrintEstimatedFinishTimeSensor(AnycubicSensorBase, SensorEntity):
     @property
     def native_value(self) -> datetime | None:
         status: dict[str, Any] = self.coordinator.data["status"]
-        if status['code'] not in ('print', 'pause'):
+        if status['code'] not in (STATUS_PRINTING, STATUS_PAUSED):
             return None
         read_time = self.coordinator.data["last_read_time"]
         return read_time + timedelta(seconds=status.get('time_remaining', 0))

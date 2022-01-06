@@ -93,13 +93,16 @@ class AnycubicPrinter:
             return False
 
     async def get_mode(self) -> int:
+        """Always seems to be 0."""
         return int(await self.send_cmd('getmode'))
 
     async def get_files(self) -> list[tuple[str, str]]:
+        """List files on the USB Key. Only works when the key is in."""
         try:
             files = await self.send_cmd('getfile', flatten=False)
             return [tuple(f.split('/')) for f in files]  # type: ignore
         except AnycubicError as e:
+            _LOGGER.error(f'Failed to get files: {e}')
             if e.type == 2:
                 print('No files')
         return []
@@ -117,6 +120,24 @@ class AnycubicPrinter:
         TODO: Haven't figured out how to process it
         """
         return await self._send_message(f'getPreview2,{file_name},')
+
+    async def start_print(self, file_number: str) -> bool:
+        try:
+            response = await self.send_cmd("gostart", file_number, flatten=False)
+            _LOGGER.debug(f'Starting {file_number}: {response}')
+            return True
+        except AnycubicError as e:
+            _LOGGER.debug(f'Not starting: {e}')
+        return False
+
+    async def set_status(self, status: str):
+        assert status in ['pause', 'stop', 'resume']
+        try:
+            response = await self.send_cmd(f"go{status}", flatten=False)
+            _LOGGER.debug(f'Setting to {status}: {response}')
+            return True
+        except AnycubicError as e:
+            _LOGGER.debug(f'Failed to {status}: {e}')
 
     async def get_sys_info(self) -> dict[str, str]:
         """Get printer system information"""
