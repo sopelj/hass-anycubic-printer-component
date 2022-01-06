@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -11,15 +11,7 @@ from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import (
-    _LOGGER,
-    SEND_COMMAND_SCHEMA,
-    SET_PRINTER_NAME_SCHEMA,
-    AnycubicDataUpdateCoordinator,
-    AnycubicPrinter,
-    send_command,
-    set_printer_name,
-)
+from . import _LOGGER, AnycubicDataUpdateCoordinator
 from .const import (
     DOMAIN,
     SERVICE_SEND_COMMAND,
@@ -28,6 +20,12 @@ from .const import (
     STATUS_LABELS,
     STATUS_PAUSED,
     STATUS_PRINTING,
+)
+from .services import (
+    SEND_COMMAND_SCHEMA,
+    SET_PRINTER_NAME_SCHEMA,
+    send_command,
+    set_printer_name,
 )
 
 
