@@ -139,5 +139,10 @@ class AnycubicPrinter:
 
     async def get_sys_info(self) -> dict[str, str]:
         """Get printer system information"""
-        model, version, identifier, wifi = await self.send_cmd('getsysinfo')
+        response = await self.send_cmd('getsysinfo')
+        try:
+            model, version, identifier, wifi = response
+        except ValueError:
+            _LOGGER.error(f'Failed to get system information: {response}')
+            model = version = identifier = wifi = None
         return {'model': model, 'firmware_version': version, 'identifier': identifier, 'wifi_ssid': wifi}
