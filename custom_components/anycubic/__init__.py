@@ -10,13 +10,25 @@ from homeassistant import core
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_IP_ADDRESS, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.util.dt as dt_util
 import voluptuous as vol
 
-from .const import DEFAULT_NAME, DEFAULT_PORT, DOMAIN
+from .const import (
+    DEFAULT_NAME,
+    DEFAULT_PORT,
+    DOMAIN,
+    SERVICE_SEND_COMMAND,
+    SERVICE_SET_PRINTER_NAME,
+)
+from .services import (
+    SEND_COMMAND_SCHEMA,
+    SET_PRINTER_NAME_SCHEMA,
+    send_command,
+    set_printer_name,
+)
 from .utils import AnycubicPrinter
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,7 +66,7 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=interval),
         )
         _LOGGER.debug(f'Setup {config.data[CONF_IP_ADDRESS]}:{config.data.get(CONF_PORT, DEFAULT_PORT)}')
-        self._printer = AnycubicPrinter(
+        self.printer = AnycubicPrinter(
             config.data[CONF_IP_ADDRESS],
             config.data.get(CONF_PORT, DEFAULT_PORT)
         )
@@ -62,11 +74,11 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         try:
-            sys_info = await self._printer.get_sys_info()
+            sys_info = await self.printer.get_sys_info()
         except asyncio.TimeoutError as e:
             raise UpdateFailed(e) from e
-        status = await self._printer.get_status()
-        name = await self._printer.get_name()
+        status = await self.printer.get_status()
+        name = await self.printer.get_name()
         return {"info": sys_info, "status": status, "last_read_time": dt_util.utcnow(), 'name': name}
 
     @property
@@ -104,8 +116,15 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Anycubic component."""
     if DOMAIN not in config:
         return True
+
     for conf in config[DOMAIN]:
         hass.async_create_task(
             hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_IMPORT}, data=conf)
         )
+
+    # Setup services
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(SERVICE_SET_PRINTER_NAME, SET_PRINTER_NAME_SCHEMA, set_printer_name)
+    platform.async_register_entity_service(SERVICE_SEND_COMMAND, SEND_COMMAND_SCHEMA, send_command)
+
     return True
