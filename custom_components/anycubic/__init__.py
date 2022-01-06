@@ -10,25 +10,13 @@ from homeassistant import core
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_IP_ADDRESS, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import config_validation as cv, entity_platform
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.util.dt as dt_util
 import voluptuous as vol
 
-from .const import (
-    DEFAULT_NAME,
-    DEFAULT_PORT,
-    DOMAIN,
-    SERVICE_SEND_COMMAND,
-    SERVICE_SET_PRINTER_NAME,
-)
-from .services import (
-    SEND_COMMAND_SCHEMA,
-    SET_PRINTER_NAME_SCHEMA,
-    send_command,
-    set_printer_name,
-)
+from .const import DEFAULT_NAME, DEFAULT_PORT, DOMAIN
 from .utils import AnycubicPrinter
 
 _LOGGER = logging.getLogger(__name__)
@@ -121,10 +109,4 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         hass.async_create_task(
             hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_IMPORT}, data=conf)
         )
-
-    # Setup services
-    platform = entity_platform.current_platform.get()
-    platform.async_register_entity_service(SERVICE_SET_PRINTER_NAME, SET_PRINTER_NAME_SCHEMA, set_printer_name)
-    platform.async_register_entity_service(SERVICE_SEND_COMMAND, SEND_COMMAND_SCHEMA, send_command)
-
     return True

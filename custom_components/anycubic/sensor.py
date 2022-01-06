@@ -7,12 +7,23 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, PERCENTAGE
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import _LOGGER, AnycubicDataUpdateCoordinator, AnycubicPrinter
+from . import (
+    _LOGGER,
+    SEND_COMMAND_SCHEMA,
+    SET_PRINTER_NAME_SCHEMA,
+    AnycubicDataUpdateCoordinator,
+    AnycubicPrinter,
+    send_command,
+    set_printer_name,
+)
 from .const import (
     DOMAIN,
+    SERVICE_SEND_COMMAND,
+    SERVICE_SET_PRINTER_NAME,
     STATUS_FINISHED,
     STATUS_LABELS,
     STATUS_PAUSED,
@@ -99,6 +110,7 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
+    # Setup Entity
     coordinator: AnycubicDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     device_id = config_entry.unique_id
     assert device_id is not None
@@ -108,3 +120,8 @@ async def async_setup_entry(
         AnycubicPrintEstimatedFinishTimeSensor(coordinator, device_id),
     ]
     async_add_entities(entities)
+
+    # Setup Services
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(SERVICE_SET_PRINTER_NAME, SET_PRINTER_NAME_SCHEMA, set_printer_name)
+    platform.async_register_entity_service(SERVICE_SEND_COMMAND, SEND_COMMAND_SCHEMA, send_command)
