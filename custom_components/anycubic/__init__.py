@@ -67,7 +67,14 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(e) from e
         status = await self.printer.get_status()
         name = await self.printer.get_name()
-        return {"info": sys_info, "status": status, "last_read_time": dt_util.utcnow(), 'name': name}
+        files = await self.printer.get_files()
+        return {
+            "info": sys_info,
+            "name": name,
+            "status": status,
+            "files": files or [],
+            "last_read_time": dt_util.utcnow(),
+        }
 
     @property
     def device_info(self) -> DeviceInfo:

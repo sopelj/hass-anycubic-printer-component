@@ -103,8 +103,6 @@ class AnycubicPrinter:
             return [tuple(f.split('/')) for f in files]  # type: ignore
         except AnycubicError as e:
             _LOGGER.error(f'Failed to get files: {e}')
-            if e.type == 2:
-                print('No files')
         return []
 
     async def get_params(self) -> list[str]:
