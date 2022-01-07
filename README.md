@@ -3,14 +3,15 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 ![Project Maintenance](https://img.shields.io/maintenance/yes/2022.svg?style=for-the-badge)
 
-# Anycubic Integration for Home Assistant
+# Custom integration for Wi-Fi enabled Anycubic 3D Printers for Home Assistant.
 
 ## Installation
 
 Custom integration to connect to the Anycubic 3D Printers that support their app.
 Only just started working on this, but seem to be able to obtain some information.
 
-*Note*: I have only tested with the Photon Mono SE. Technically should work with other resin printers that support the app. I have no FDM printers from Anycubic to test with though, so I'm not sure what they return. 
+*Note*: I have only tested it with the Photon Mono SE. Technically should work with other resin printers that support the app. 
+I have no FDM printers from Anycubic to test with though, so I'm not sure what they return. 
 
 ## Installation
 

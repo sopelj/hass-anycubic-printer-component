@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import TYPE_CHECKING
 
 from homeassistant.const import CONF_NAME
@@ -40,8 +41,12 @@ async def send_command(entity: AnycubicPrintStatusSensor, service_call: ServiceC
     _LOGGER.debug(f"Service called run command: '{command}'")
     assert current_status.get('code', None) != command, "Already in desired state"
     if command == COMMAND_PRINT:
+        # Ensure filename was provided
         if not (file_name := service_call.data.get(CONF_PRINT_FILE_NAME)):
             raise ValueError('File name is required to start a print')
+        # Lookup the numeric version of the filename if that's not what was provided
+        if not re.match(r'[0-9]+.pwms', file_name):
+            file_name = entity.coordinator.data['files'][file_name]
         await entity.coordinator.printer.start_print(file_name)
     else:
         await entity.coordinator.printer.set_status(command)

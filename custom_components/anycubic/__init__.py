@@ -1,4 +1,4 @@
-"""Anycubic 3D Printer Integration."""
+"""Custom integration for Wi-Fi enabled Anycubic 3D Printers."""
 from __future__ import annotations
 
 import asyncio
@@ -41,6 +41,7 @@ CONFIG_SCHEMA = vol.Schema(
 
 
 class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
+    """Coordinator for all sensors."""
     def __init__(
         self,
         hass: HomeAssistant,
@@ -58,7 +59,7 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
             config.data[CONF_IP_ADDRESS],
             config.data.get(CONF_PORT, DEFAULT_PORT)
         )
-        self.data = {"info": {}, "status": {}, "last_read_time": None, "name": DEFAULT_NAME}
+        self.data = {"info": {}, "status": {}, "last_read_time": None, "name": DEFAULT_NAME, "files": {}}
 
     async def _async_update_data(self):
         try:
@@ -72,12 +73,13 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
             "info": sys_info,
             "name": name,
             "status": status,
-            "files": files or [],
+            "files": dict(files or []),
             "last_read_time": dt_util.utcnow(),
         }
 
     @property
     def device_info(self) -> DeviceInfo:
+        """Device info."""
         unique_id = cast(str, self.config_entry.unique_id)
         return DeviceInfo(
             identifiers={(DOMAIN, unique_id)},

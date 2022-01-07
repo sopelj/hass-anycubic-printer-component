@@ -35,7 +35,7 @@ send_command:
             - resume
             - stop
     file_name:
-      name: File number
-      description: File name/number to print (Only used for "print" command)
-      example: 98.pwms
+      name: File name
+      description: File name to print (Only used for "print" command)
+      example: my print.pwms
       required: false

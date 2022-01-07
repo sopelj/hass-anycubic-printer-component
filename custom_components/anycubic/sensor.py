@@ -67,9 +67,12 @@ class AnycubicPrintStatusSensor(AnycubicSensorBase):
     @property
     def state_attributes(self) -> dict[str, Any]:
         """Return a list of attributes."""
-        attrs = self.coordinator.data["info"] | self.coordinator.data["status"]
-        attrs['files'] = self.coordinator.data['files']
-        return attrs
+        return {
+            "name": self.coordinator.data['name'],
+            "files": list(self.coordinator.data['files']),
+            **self.coordinator.data["info"],
+            **self.coordinator.data["status"]
+        }
 
 
 class AnycubicPrintJobPercentageSensor(AnycubicSensorBase, SensorEntity):
