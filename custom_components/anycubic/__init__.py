@@ -85,7 +85,7 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
             identifiers={(DOMAIN, unique_id)},
             name=self.data['name'],
             model=self.data['info'].get('model', None),
-            sw_version=self.data['info'].get('firmware', None),
+            sw_version=self.data['info'].get('firmware_version', None),
             manufacturer="Anycubic",
         )
 
