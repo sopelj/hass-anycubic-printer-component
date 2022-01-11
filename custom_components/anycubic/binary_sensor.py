@@ -1,7 +1,10 @@
 """Binary Sensor entities for component."""
 from __future__ import annotations
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
@@ -44,6 +47,7 @@ class AnycubicPrintingBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._device_id = device_id
         self._attr_name = "Anycubic Printing"
         self._attr_unique_id = f"printing-{device_id}"
+        self._attr_device_class = BinarySensorDeviceClass.RUNNING
 
     @property
     def device_info(self) -> DeviceInfo:
