@@ -27,26 +27,32 @@ SEND_COMMAND_SCHEMA = {
 }
 
 
-async def set_printer_name(entity: AnycubicPrintStatusSensor, service_call: ServiceCall) -> None:
+async def set_printer_name(
+    entity: AnycubicPrintStatusSensor,
+    service_call: ServiceCall,
+) -> None:
     """Set name of Printer."""
     name: str = service_call.data[CONF_NAME]
     _LOGGER.debug(f"Service called to set name to '{name}'")
     await entity.coordinator.printer.set_name(name)
 
 
-async def send_command(entity: AnycubicPrintStatusSensor, service_call: ServiceCall) -> None:
+async def send_command(
+    entity: AnycubicPrintStatusSensor,
+    service_call: ServiceCall,
+) -> None:
     """Send a supported command to the printer."""
     command: str = service_call.data[CONF_PRINT_CMD]
-    current_status = entity.coordinator.data['status']
+    current_status = entity.coordinator.data["status"]
     _LOGGER.debug(f"Service called run command: '{command}'")
-    assert current_status.get('code', None) != command, "Already in desired state"
+    assert current_status.get("code", None) != command, "Already in desired state"
     if command == COMMAND_PRINT:
         # Ensure filename was provided
         if not (file_name := service_call.data.get(CONF_PRINT_FILE_NAME)):
-            raise ValueError('File name is required to start a print')
+            raise ValueError("File name is required to start a print")
         # Lookup the numeric version of the filename if that's not what was provided
-        if not re.match(r'[0-9]+.pwms', file_name):
-            file_name = entity.coordinator.data['files'][file_name]
+        if not re.match(r"[0-9]+.pwms", file_name):
+            file_name = entity.coordinator.data["files"][file_name]
         await entity.coordinator.printer.start_print(file_name)
     else:
         await entity.coordinator.printer.set_status(command)

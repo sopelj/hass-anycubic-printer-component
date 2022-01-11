@@ -20,7 +20,7 @@ from .const import DEFAULT_NAME, DEFAULT_PORT, DOMAIN
 from .utils import AnycubicPrinter
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -29,12 +29,14 @@ CONFIG_SCHEMA = vol.Schema(
             [
                 vol.Schema(
                     {
-                        vol.Required(CONF_IP_ADDRESS): cv.matches_regex(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'),
+                        vol.Required(CONF_IP_ADDRESS): cv.matches_regex(
+                            r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
+                        ),
                         vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
-                    }
-                )
+                    },
+                ),
             ],
-        )
+        ),
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -42,29 +44,41 @@ CONFIG_SCHEMA = vol.Schema(
 
 class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
     """Coordinator for all sensors."""
+
     def __init__(
         self,
         hass: HomeAssistant,
         config: ConfigEntry,
         interval: int,
     ) -> None:
+        """Set up Datacordinator."""
         super().__init__(
             hass,
             _LOGGER,
             name=f"anycubic-{config.entry_id}",
             update_interval=timedelta(seconds=interval),
         )
-        _LOGGER.debug(f'Setup {config.data[CONF_IP_ADDRESS]}:{config.data.get(CONF_PORT, DEFAULT_PORT)}')
+        _LOGGER.debug(
+            f"Setup {config.data[CONF_IP_ADDRESS]}:{config.data.get(CONF_PORT, DEFAULT_PORT)}",
+        )
         self.printer = AnycubicPrinter(
             config.data[CONF_IP_ADDRESS],
-            config.data.get(CONF_PORT, DEFAULT_PORT)
+            config.data.get(CONF_PORT, DEFAULT_PORT),
         )
-        self.data = {"info": {}, "status": {}, "last_read_time": None, "name": DEFAULT_NAME, "files": {}}
+        self.data = {
+            "info": {},
+            "status": {},
+            "last_read_time": None,
+            "name": DEFAULT_NAME,
+            "files": {},
+        }
 
     async def _async_update_data(self):
+        """Update data from printer."""
         try:
             sys_info = await self.printer.get_sys_info()
-        except asyncio.TimeoutError as e:
+            assert sys_info, "Failed to fetch information"
+        except (asyncio.TimeoutError, AssertionError) as e:
             raise UpdateFailed(e) from e
         status = await self.printer.get_status()
         name = await self.printer.get_name()
@@ -83,9 +97,9 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
         unique_id = cast(str, self.config_entry.unique_id)
         return DeviceInfo(
             identifiers={(DOMAIN, unique_id)},
-            name=self.data['name'],
-            model=self.data['info'].get('model', None),
-            sw_version=self.data['info'].get('firmware_version', None),
+            name=self.data["name"],
+            model=self.data["info"].get("model", None),
+            sw_version=self.data["info"].get("firmware_version", None),
             manufacturer="Anycubic",
         )
 
@@ -116,6 +130,10 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 
     for conf in config[DOMAIN]:
         hass.async_create_task(
-            hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_IMPORT}, data=conf)
+            hass.config_entries.flow.async_init(
+                DOMAIN,
+                context={"source": SOURCE_IMPORT},
+                data=conf,
+            ),
         )
     return True
