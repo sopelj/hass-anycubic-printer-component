@@ -116,7 +116,10 @@ class AnycubicPrinter:
             files = await self.send_cmd("getfile", flatten=False)
             return [tuple(f.split("/")) for f in files]  # type: ignore
         except AnycubicError as e:
-            _LOGGER.error(f"Failed to get files: {e}")
+            if e.type == 1:
+                _LOGGER.debug("Failed to fetch files. No USB Key.")
+            else:
+                _LOGGER.error(f"Failed to get files: {e}")
         return []
 
     async def get_params(self) -> list[str]:
