@@ -25,12 +25,19 @@ And then add to your configuration.yaml and add sensors for your mug(s):
 
 ### Config Flow
 
-- Go into Settings -> Devices 
-- Choose "Add Integration"
-- Search for "Anycubic"
-- Enter the IP address and port (default is 6000) of your printer and hit next
+1. Click here: [![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=anycubic)
+2. Enter the IP address and port (default is 6000) of your printer and hit next
+
+*Or*
+
+1. Go into Settings -> Devices 
+2. Choose "Add Integration" 
+3. Search for "Anycubic"
+4. Enter the IP address and port (default is 6000) of your printer and hit next
 
 ## Usage
+
+### Lovelace example
 
 Quick example for usage in lovelace
 
@@ -58,4 +65,49 @@ Quick example for usage in lovelace
       card:
         type: entity
         entity: sensor.anycubic_estimated_finish_time
+```
+
+
+### Services
+
+#### Set printer name
+
+| Key        | Example         | Description                               |
+|------------|-----------------|-------------------------------------------|
+| `name`     | `My 3D printer` | The name you wish to give to your printer |
+
+```yaml
+service: anycubic.set_printer_name
+data:
+  name: My Printer
+target:
+  entity_id: sensor.anycubic_printer_state
+```
+
+#### Send command
+
+| Key         | Example                    | Description                                     |
+|-------------|----------------------------|-------------------------------------------------|
+| `command`   | `print`                    | Command to send. (print, pause, resume or stop) |
+| `file_name` | `filename on printer.pwms` | (Only required for `print` command).            |
+
+##### Start Print
+
+```yaml
+service: anycubic.send_command
+data:
+  command: print
+  file_name: my print.pwms
+target:
+  entity_id: sensor.anycubic_printer_state
+```
+
+##### Pause Print
+
+```yaml
+service: anycubic.send_command
+data:
+  command: pause
+target:
+  entity_id: sensor.anycubic_printer_state
 ```

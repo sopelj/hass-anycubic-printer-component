@@ -18,9 +18,11 @@ PrinterSatus = namedtuple(
 class AnycubicError(Exception):
     """Subclassed Exception to facilitate catching."""
 
-    def __init__(self, message: str, error_type: int) -> None:
+    def __init__(self, message: str, error: str) -> None:
         """Set error type."""
-        self.type = error_type
+        self.type: int | None = int(error[5:]) if len(error) > 5 else None
+        if self.type:
+            message = f"{message} (Error {self.type})"
         super().__init__(message)
 
 
@@ -55,10 +57,9 @@ class AnycubicPrinter:
         data = await self._send_message(",".join(commands) + ",")
         response = [s.decode("gbk") for s in data.split(b",")[len(commands) : -1]]
         if response and response[0].startswith("ERROR"):
-            error_type = int(response[0][5]) if len(response[0]) == 6 else 0
             raise AnycubicError(
-                f'Failed to run command "{",".join(commands)}" ({response[0]})',
-                error_type,
+                f'Failed to run command "{",".join(commands)}"',
+                response[0],
             )
         if flatten is True and len(response) == 1:
             response = response[0]
