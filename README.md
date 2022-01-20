@@ -21,7 +21,7 @@ Add to HACS as custom repository:
 
 <https://github.com/sopelj/hass-anycubic-printer-component>
 
-And then add to your configuration.yaml and add sensors for your mug(s):
+And install "Anycubic" integration.
 
 ### Config Flow
 

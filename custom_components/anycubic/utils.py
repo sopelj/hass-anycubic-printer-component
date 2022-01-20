@@ -85,15 +85,19 @@ class AnycubicPrinter:
             )
         return response
 
-    async def get_wifi(self) -> str:
+    async def get_wifi(self) -> str | None:
         """Get Wi-Fi name."""
         wifi_name: str = await self.send_cmd("getwifi")
-        return wifi_name.encode("gbk").decode("utf8")  # printer uses GBK
+        if wifi_name:
+            return wifi_name.encode("gbk").decode("utf8")  # printer uses GBK
+        return None
 
-    async def get_name(self) -> str:
+    async def get_name(self) -> str | None:
         """Get printer name."""
         name: str = await self.send_cmd("getname")
-        return name.encode("gbk").decode("utf8")  # printer uses GBK
+        if name:
+            return name.encode("gbk").decode("utf8")  # printer uses GBK
+        return None
 
     async def set_name(self, name: str) -> bool:
         """Set the printer name."""
