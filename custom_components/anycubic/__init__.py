@@ -77,7 +77,7 @@ class AnycubicDataUpdateCoordinator(DataUpdateCoordinator):
         """Update data from printer."""
         try:
             sys_info = await self.printer.get_sys_info()
-            assert sys_info, "Failed to fetch information"
+            assert sys_info is not None, "Failed to fetch information"
         except (asyncio.TimeoutError, AssertionError) as e:
             raise UpdateFailed(e) from e
         status = await self.printer.get_status()

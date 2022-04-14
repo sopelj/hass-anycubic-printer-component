@@ -170,7 +170,7 @@ class AnycubicPrinter:
         try:
             model, version, identifier, wifi = response
         except ValueError:
-            _LOGGER.error(f"Failed to get system information: {response}")
+            _LOGGER.debug(f"Failed to get system information: {response}")
             return None
         return {
             "model": model,
