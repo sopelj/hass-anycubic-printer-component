@@ -6,7 +6,7 @@
   "documentation": "https://github.com/sopelj/hass-anycubic-printer-component/",
   "domain": "anycubic",
   "iot_class": "local_polling",
-  "name": "Anycubic",
+  "name": "Anycubic WiFi Printer",
   "requirements": [],
   "version": "1.0.1"
 }
