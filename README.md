@@ -5,6 +5,8 @@
 
 # Custom integration for Wi-Fi enabled Anycubic 3D Printers for Home Assistant.
 
+:warning: [Another Integration](https://github.com/adamoutler/anycubic-homeassistant) has been added to HACS by default now, so I recommend using it instead for now. I'll come back to this in the future if it is no longer maintained I:warning:
+
 Custom integration to connect to the Anycubic 3D Printers that support their app.
 Only just started working on this, but seem to be able to obtain some information.
 
